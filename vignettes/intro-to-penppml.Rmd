@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
+
 `penppml` is an R package that enables users to fit penalized Poisson Pseudo Maximum Likelihood (PPML) regressions with high-dimensional fixed effects (HDFE). Supported penalties in the current version are ridge and lasso. The original application that motivated the development of `penppml` was the estimation of three-way gravity models of trade with a large number of PTA provision dummies (Breinlich, Corradi, Rocha, Ruta, Santos Silva and Zylkin, 2021).
 
 To install and load `penppml`, you can use the following commands:
@@ -36,7 +37,6 @@ library(penppml)
 devtools::load_all()
 ```
 
-
 # Data Sets
 
 The `penppml` package features the `trade` data set, which integrates panel data on bilateral trade flows with information about specific provisions in trade agreements for 220 exporters and 270 importers. The provisions included in the package are a subset of 16 out of 305 "essential" provisions featured in the full data set. More information about the data set and the variables is included in the corresponding help file, accessible via `?trade`.
@@ -44,6 +44,8 @@ The `penppml` package features the `trade` data set, which integrates panel data
 ```{r inspect trade, echo = FALSE}
 knitr::kable(head(trade[, 1:10], 10), format = "pipe", caption = "Table 1: International Trade Data Set")
 ```
+
+\
 
 Along with the `trade` data set, the package includes an auxiliary data frame, `countries`, which contains basic information about the country ISO codes included in the main data set.
 
@@ -75,11 +77,11 @@ reg1 <- hdfeppml(data = trade2,
 
 As we can see, the function is designed to be data-frame-friendly: the user sets a data frame of reference in the `data` argument and then picks the dependent, independent and fixed effect variables either by name or by column number within the provided data frame. Also, note the following points about the syntax:
 
-- The `fixed` argument can take either a single vector (just like the `dep` argument; each element will be used as a separate fixed effect) or a list of vectors. The latter option is useful in cases where the desired fixed effect is the result of the interaction of two or more variables, as in the gravity model of trade. In those cases, you can specify any number of separate fixed effects in distinct elements of the list and, inside each element, which variables in the data set you want to interact.
+-   The `fixed` argument can take either a single vector (just like the `dep` argument; each element will be used as a separate fixed effect) or a list of vectors. The latter option is useful in cases where the desired fixed effect is the result of the interaction of two or more variables, as in the gravity model of trade. In those cases, you can specify any number of separate fixed effects in distinct elements of the list and, inside each element, which variables in the data set you want to interact.
 
-- As explained in the note, if `indep` is empty, the function uses all remaining columns in the data frame by default.
+-   As explained in the note, if `indep` is empty, the function uses all remaining columns in the data frame by default.
 
-Internally, the function will do the necessary transformations of the columns into vectors and matrices, as needed by the algorithm. 
+Internally, the function will do the necessary transformations of the columns into vectors and matrices, as needed by the algorithm.
 
 Alternatively, more advanced users who prefer to handle data transformations themselves can use the internal function `hdfeppml_int`. For more information and examples on this issue, run `?hdfeppml` or `?hdfeppml_int`. Note also that this applies to all of the main functions in our package: both the data-frame-friendly wrapper and the internal function are available for use.
 
@@ -90,7 +92,6 @@ results <- data.frame(prov = rownames(reg1$coefficients), b = reg1$coefficients,
 results$se[!is.na(reg1$coefficients)] <- reg1$se
 results
 ```
-
 
 ```{r display results, echo = FALSE}
 results <- data.frame(prov = rownames(reg1$coefficients), b = reg1$coefficients, se = 0)
@@ -105,7 +106,7 @@ knitr::kable(list(results[1:8, ], results[9:16, ]),
 
 (Note that the functions is automatically dropping perfectly collinear variables from the estimation algorithm and reporting `NA` as the coefficient.)
 
-If we want to specify the independent variable, we can specify indep as pointing to columns 5 to 7 with the following code. 
+If we want to specify the independent variable, we can specify indep as pointing to columns 5 to 7 with the following code.
 
 ```{r try hdfeppml2, eval=FALSE}
 reg1_indep <- hdfeppml(data = trade2, indep=5:7,
@@ -114,7 +115,6 @@ reg1_indep <- hdfeppml(data = trade2, indep=5:7,
                               c("imp", "time"),
                               c("exp", "imp")))
 ```
-
 
 # Penalized PPML estimation with HDFE
 
@@ -208,7 +208,7 @@ Note that this feature is still in development and may contain bugs.
 
 ### Cross-validation
 
-The `mlfitppml` function enables users to carry out cross-validation of their models via the `xval` and `IDs` arguments. When `xval` is set to `TRUE`, the function performs cross-validation using a user-provided vector of IDs. For instance, if we want to do k-fold cross validation with k = 20,  splitting the data set by agreement (not by observation), we can do the following:
+The `mlfitppml` function enables users to carry out cross-validation of their models via the `xval` and `IDs` arguments. When `xval` is set to `TRUE`, the function performs cross-validation using a user-provided vector of IDs. For instance, if we want to do k-fold cross validation with k = 20, splitting the data set by agreement (not by observation), we can do the following:
 
 ```{r split data set by agreement}
 id <- unique(trade[(trade$exp %in% selected) & (trade$imp %in% selected), 5])
@@ -269,7 +269,7 @@ In this case, the RMSE criterion suggest that the penalty should be set at 0. In
 
 ### Plugin lasso
 
-This package also enables the use of the plugin lasso method, incorporating coefficient-specific penalty weights calculated automatically by the package. The most convenient way to do this is to set `method = "plugin"` in `mlfitppml`. Note that the plugin algorithm requires a clustering variable  - we are using the interaction of the exporter and importer variables in the `trade` data set:
+This package also enables the use of the plugin lasso method, incorporating coefficient-specific penalty weights calculated automatically by the package. The most convenient way to do this is to set `method = "plugin"` in `mlfitppml`. Note that the plugin algorithm requires a clustering variable - we are using the interaction of the exporter and importer variables in the `trade` data set:
 
 ```{r try plugin lasso, results = FALSE}
 reg6 <- mlfitppml(data = trade2,
@@ -299,7 +299,7 @@ knitr::kable(list(results[1:7,], results[8:14,]),
 
 We can see that the plugin lasso is very strict: only three provisions have non-zero coefficients when the penalties are set at the level suggested by the plugin algorithm. Compare this to the cross-validation results, which didn't remove any of the provisions.
 
-We can also set the gamma value as defined in Belloni et al. to something less strict, e.g. 0.3. 
+We can also set the gamma value as defined in Belloni et al. to something less strict, e.g. 0.3.
 
 ```{r try plugin lasso gamma, results = FALSE}
 reg6_gamma <- mlfitppml(data = trade2,
@@ -345,7 +345,6 @@ Currently, the function returns a matrix with coefficient estimates for each of 
 ```{r iceberg results, results = FALSE}
 iceberg_results
 ```
-
 
 ```{r display iceberg results, echo = FALSE}
 knitr::kable(iceberg_results, 
@@ -409,7 +408,6 @@ knitr::kable(bs1$betas,
              digits = 2)
 ```
 
-
 # References
 
 Breinlich, H., Corradi, V., Rocha, N., Ruta, M., Santos Silva, J.M.C. and T. Zylkin, T. (2021). "Machine Learning in International Trade Research: Evaluating the Impact of Trade Agreements", Policy Research Working Paper; No. 9629. World Bank, Washington, DC.
@@ -420,5 +418,4 @@ Gaure, S (2013). "OLS with multiple high dimensional category variables", *Compu
 
 Friedman, J., T. Hastie, and R. Tibshirani (2010). "Regularization paths for generalized linear models via coordinate descent", *Journal of Statistical Software*, 33, 1-22.
 
-Belloni, A., V. Chernozhukov, C. Hansen and D. Kozbur (2016). "Inference in high dimensional panel
-models with an application to gun control", *Journal of Business & Economic Statistics*, 34, 590-605.
+Belloni, A., V. Chernozhukov, C. Hansen and D. Kozbur (2016). "Inference in high dimensional panel models with an application to gun control", *Journal of Business & Economic Statistics*, 34, 590-605.
